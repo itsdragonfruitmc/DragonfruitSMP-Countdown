@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#120d1c">
+<title>DragonfruitSMP • Countdown Control</title>
+<style>
+:root{--pink:#f04bb8;--pink2:#ff83d4;--lime:#c5ff65;--bg:#100b18;--panel:rgba(28,19,39,.78);--muted:#b8a9c6;--line:rgba(255,255,255,.11)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 15% 10%,rgba(240,75,184,.17),transparent 34%),radial-gradient(ellipse at 85% 75%,rgba(197,255,101,.10),transparent 30%),linear-gradient(135deg,#100b18,#171025 55%,#0d1019);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.17;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+.orb{position:fixed;width:280px;height:280px;border-radius:50%;filter:blur(70px);opacity:.17;pointer-events:none;animation:drift 12s ease-in-out infinite alternate}.orb.one{background:var(--pink);top:15%;left:-130px}.orb.two{background:var(--lime);right:-130px;bottom:4%;animation-delay:-5s}
+@keyframes drift{to{transform:translate(45px,-35px) scale(1.12)}}@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}@keyframes glow{0%,100%{box-shadow:0 0 18px #f04bb822}50%{box-shadow:0 0 34px #f04bb855}}@keyframes pulse{0%,100%{opacity:.7;transform:scale(.98)}50%{opacity:1;transform:scale(1.02)}}
+main{width:min(1050px,92vw);margin:0 auto;padding:35px 0 55px;position:relative}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:54px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:.02em}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--pink),#9b55ff);display:grid;place-items:center;box-shadow:0 8px 28px #f04bb833;font-size:22px}
+.pill{font-size:12px;color:var(--lime);border:1px solid #c5ff6544;background:#c5ff6510;border-radius:999px;padding:8px 12px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.hero{text-align:center;animation:fadeUp .7s ease both}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.28em;color:var(--pink2);font-weight:800}
+h1{font-size:clamp(38px,7vw,76px);line-height:1.02;letter-spacing:-.055em;margin:17px 0 16px;font-weight:950}h1 span{background:linear-gradient(90deg,#fff 5%,var(--pink2) 48%,var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent}
+.subtitle{color:var(--muted);max-width:580px;margin:0 auto;line-height:1.7;font-size:15px}
+.countdown{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin:38px auto 18px;max-width:900px}
+.time-card{position:relative;padding:24px 10px 20px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));backdrop-filter:blur(12px);animation:glow 4s ease-in-out infinite}
+.time-card:nth-child(2){animation-delay:.3s}.time-card:nth-child(3){animation-delay:.6s}.time-card:nth-child(4){animation-delay:.9s}.time-card:nth-child(5){animation-delay:1.2s}
+.num{font-variant-numeric:tabular-nums;font-size:clamp(30px,5vw,56px);font-weight:900;letter-spacing:-.05em;line-height:1.1}.unit{margin-top:10px;font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);font-weight:800}
+.status{font-size:12px;color:var(--muted);text-align:center;margin-bottom:46px}.status b{color:var(--lime)}
+.panel{width:min(590px,100%);margin:0 auto;padding:26px;border:1px solid var(--line);border-radius:24px;background:var(--panel);backdrop-filter:blur(18px);box-shadow:0 25px 90px #0005;animation:fadeUp .8s .1s ease both}
+.panel h2{margin:0 0 8px;font-size:22px;letter-spacing:-.03em}.panel p{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 20px}
+label{display:block;font-size:12px;font-weight:800;color:#e7ddec;margin:15px 0 8px;letter-spacing:.04em}
+input{width:100%;min-width:0;border:1px solid #ffffff20;background:#100b18b8;color:white;border-radius:12px;padding:13px 14px;font:inherit;outline:none;transition:border .2s,box-shadow .2s}
+input:focus{border-color:var(--pink);box-shadow:0 0 0 3px #f04bb81c}
+button{border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:850;cursor:pointer;transition:transform .18s,filter .18s,box-shadow .18s}
+button:hover{transform:translateY(-2px);filter:brightness(1.08)}button:active{transform:translateY(0) scale(.99)}
+.primary{background:linear-gradient(100deg,var(--pink),#bb62ff);color:#fff;box-shadow:0 9px 25px #f04bb82c}.secondary{background:#ffffff0b;border:1px solid var(--line);color:#f5eafa}.lime{background:var(--lime);color:#18210a}
+.full{width:100%;margin-top:14px}.row{display:flex;gap:10px}.row>*{flex:1}
+.message{min-height:20px;font-size:12px;color:var(--pink2);margin-top:11px}.hidden{display:none!important}
+.admin-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}.admin-head h2{margin:0}.unlocked{font-size:11px;color:var(--lime);letter-spacing:.12em;text-transform:uppercase}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.field label{margin-top:12px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.actions button{flex:1}
+.note{border-top:1px solid var(--line);margin-top:22px;padding-top:15px;color:#93859f;font-size:11px;line-height:1.6}
+footer{text-align:center;color:#766a84;font-size:11px;margin-top:28px;letter-spacing:.08em}.heart{color:var(--pink)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:#21172d;border:1px solid #ffffff20;padding:12px 18px;border-radius:14px;box-shadow:0 12px 35px #0007;font-size:13px;transition:.25s;pointer-events:none;z-index:10}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:650px){main{padding-top:22px}.topbar{margin-bottom:42px}.pill{font-size:10px;padding:7px 9px}.countdown{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:28px}.time-card{padding:18px 7px}.time-card:nth-child(4){grid-column:1/2}.panel{padding:20px}.fields{gap:0 8px}.actions{flex-direction:column}.actions button{width:100%}}
+@media(max-width:390px){.countdown{grid-template-columns:repeat(2,minmax(0,1fr))}.time-card:last-child{grid-column:1/-1}.fields{grid-template-columns:1fr}.topbar{align-items:flex-start}.pill{max-width:130px;text-align:center}}
+</style>
+</head>
+<body>
+<div class="orb one"></div><div class="orb two"></div>
+<main>
+  <header class="topbar">
+    <div class="brand"><div class="logo">🍉</div><div>DRAGONFRUIT<span style="color:var(--pink2)">SMP</span></div></div>
+    <div class="pill">✦ Launch countdown</div>
+  </header>
+  <section class="hero">
+    <div class="eyebrow">Something legendary is growing</div>
+    <h1>THE NEXT ERA<br><span>STARTS SOON.</span></h1>
+    <p class="subtitle">A new adventure is on the horizon. Get ready to build, explore, team up, and make your mark on DragonfruitSMP.</p>
+  </section>
+  <section class="countdown" aria-label="Countdown">
+    <div class="time-card"><div class="num" id="months">00</div><div class="unit">Months*</div></div>
+    <div class="time-card"><div class="num" id="weeks">00</div><div class="unit">Weeks</div></div>
+    <div class="time-card"><div class="num" id="days">00</div><div class="unit">Days</div></div>
+    <div class="time-card"><div class="num" id="minutes">00</div><div class="unit">Minutes</div></div>
+    <div class="time-card"><div class="num" id="seconds">00</div><div class="unit">Seconds</div></div>
+  </section>
+  <div class="status" id="status">Countdown status: <b>waiting for launch day</b></div>
+
+  <section class="panel" id="loginPanel">
+    <h2>🔐 Countdown control</h2>
+    <p>Server owner access only. Enter the control password to customize the countdown.</p>
+    <form id="loginForm">
+      <label for="password">CONTROL PASSWORD</label>
+      <input id="password" type="password" placeholder="Enter password…" autocomplete="current-password" required>
+      <button class="primary full" type="submit">Unlock control panel&nbsp; ↗</button>
+      <div class="message" id="loginMessage" role="status"></div>
+    </form>
+  </section>
+
+  <section class="panel hidden" id="adminPanel">
+    <div class="admin-head"><h2>⚙ Countdown settings</h2><span class="unlocked">● Unlocked</span></div>
+    <p>Set the remaining time. Your countdown starts when you press Save countdown.</p>
+    <div class="fields">
+      <div class="field"><label for="setMonths">MONTHS</label><input id="setMonths" type="number" min="0" max="1200" value="1"></div>
+      <div class="field"><label for="setWeeks">WEEKS</label><input id="setWeeks" type="number" min="0" max="5200" value="0"></div>
+      <div class="field"><label for="setDays">DAYS</label><input id="setDays" type="number" min="0" max="36500" value="0"></div>
+      <div class="field"><label for="setMinutes">MINUTES</label><input id="setMinutes" type="number" min="0" max="52560000" value="0"></div>
+      <div class="field"><label for="setSeconds">SECONDS</label><input id="setSeconds" type="number" min="0" max="3153600000" value="0"></div>
+    </div>
+    <div class="actions">
+      <button class="lime" id="saveBtn">▶ Save countdown</button>
+      <button class="secondary" id="pauseBtn">Ⅱ Pause</button>
+      <button class="secondary" id="resetBtn">↺ Reset</button>
+    </div>
+    <div class="message" id="adminMessage" role="status"></div>
+    <div class="note">* Months are treated as 30 days and weeks as 7 days for this duration countdown. Settings are saved in this browser on this device.</div>
+    <button class="secondary full" id="lockBtn">Lock control panel</button>
+  </section>
+  <footer>MADE FOR THE COMMUNITY <span class="heart">♥</span> DRAGONFRUITSMP</footer>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+  // This is a client-side demo gate, not secure authentication. See note below.
+  const PASSWORD = "dragonfruitmc151015";
+  const ids = ["months","weeks","days","minutes","seconds"];
+  const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const storageKey = "dragonfruitCountdownEnd_v1";
+  const pauseKey = "dragonfruitCountdownPaused_v1";
+  let endAt = Number(localStorage.getItem(storageKey)) || 0;
+  let remainingWhenPaused = Number(localStorage.getItem(pauseKey)) || 0;
+  let paused = remainingWhenPaused > 0;
+  let toastTimer;
+
+  const $ = id => document.getElementById(id);
+  function showToast(text) {
+    $("toast").textContent = text;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2300);
+  }
+  function durationFromInputs() {
+    const values = ["setMonths","setWeeks","setDays","setMinutes","setSeconds"].map(id => {
+      const n = Number($(id).value);
+      if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) throw new Error("Use whole numbers that are zero or higher.");
+      return n;
+    });
+    return values[0]*30*86400000 + values[1]*7*86400000 + values[2]*86400000 + values[3]*60000 + values[4]*1000;
+  }
+  function fillInputs(ms) {
+    let s = Math.max(0, Math.floor(ms/1000));
+    const months = Math.floor(s/(30*86400)); s %= 30*86400;
+    const weeks = Math.floor(s/(7*86400)); s %= 7*86400;
+    const days = Math.floor(s/86400); s %= 86400;
+    const minutes = Math.floor(s/60); s %= 60;
+    $("setMonths").value = months; $("setWeeks").value = weeks;
+    $("setDays").value = days; $("setMinutes").value = minutes; $("setSeconds").value = s;
+  }
+  function render() {
+    let ms = paused ? remainingWhenPaused : Math.max(0, endAt - Date.now());
+    if (!paused && endAt && ms === 0) {
+      $("status").innerHTML = 'Countdown status: <b style="color:var(--pink2)">the moment has arrived ✦</b>';
+    } else if (paused) {
+      $("status").innerHTML = 'Countdown status: <b>paused</b>';
+    } else if (endAt) {
+      $("status").innerHTML = 'Countdown status: <b>counting down live</b>';
+    } else {
+      $("status").innerHTML = 'Countdown status: <b>waiting for launch day</b>';
+    }
+    let s = Math.max(0, Math.floor(ms/1000));
+    const months = Math.floor(s/(30*86400)); s %= 30*86400;
+    const weeks = Math.floor(s/(7*86400)); s %= 7*86400;
+    const days = Math.floor(s/86400); s %= 86400;
+    const hours = Math.floor(s/3600); s %= 3600;
+    const minutes = Math.floor(s/60); s %= 60;
+    // Keep the requested five displays: minutes show total minutes under the current week/day breakdown.
+    els.months.textContent = String(months).padStart(2,"0");
+    els.weeks.textContent = String(weeks).padStart(2,"0");
+    els.days.textContent = String(days).padStart(2,"0");
+    els.minutes.textContent = String(hours*60+minutes).padStart(2,"0");
+    els.seconds.textContent = String(s).padStart(2,"0");
+  }
+  $("loginForm").addEventListener("submit", e => {
+    e.preventDefault();
+    if ($("password").value === PASSWORD) {
+      $("loginPanel").classList.add("hidden");
+      $("adminPanel").classList.remove("hidden");
+      $("loginMessage").textContent = "";
+      fillInputs(paused ? remainingWhenPaused : Math.max(0,endAt-Date.now()));
+      showToast("Control panel unlocked ✨");
+    } else {
+      $("loginMessage").textContent = "Incorrect password. Try again.";
+      $("password").value = "";
+      $("password").focus();
+    }
+  });
+  $("saveBtn").addEventListener("click", () => {
+    try {
+      const ms = durationFromInputs();
+      endAt = Date.now() + ms;
+      paused = false; remainingWhenPaused = 0;
+      localStorage.setItem(storageKey, String(endAt));
+      localStorage.removeItem(pauseKey);
+      $("adminMessage").textContent = "Countdown saved and running!";
+      render(); showToast("Countdown updated 🍉");
+    } catch(err) { $("adminMessage").textContent = err.message; }
+  });
+  $("pauseBtn").addEventListener("click", () => {
+    if (paused) {
+      endAt = Date.now() + remainingWhenPaused;
+      paused = false; remainingWhenPaused = 0;
+      localStorage.setItem(storageKey, String(endAt)); localStorage.removeItem(pauseKey);
+      $("pauseBtn").textContent = "Ⅱ Pause";
+      $("adminMessage").textContent = "Countdown resumed.";
+      showToast("Countdown resumed");
+    } else if (endAt > Date.now()) {
+      remainingWhenPaused = endAt - Date.now(); paused = true;
+      localStorage.setItem(pauseKey, String(remainingWhenPaused));
+      localStorage.removeItem(storageKey);
+      $("pauseBtn").textContent = "▶ Resume";
+      $("adminMessage").textContent = "Countdown paused.";
+      showToast("Countdown paused");
+    } else {
+      $("adminMessage").textContent = "Set a countdown first, then you can pause it.";
+    }
+    render();
+  });
+  $("resetBtn").addEventListener("click", () => {
+    endAt = 0; paused = false; remainingWhenPaused = 0;
+    localStorage.removeItem(storageKey); localStorage.removeItem(pauseKey);
+    ids.forEach(id => els[id].textContent = "00");
+    $("status").innerHTML = 'Countdown status: <b>waiting for launch day</b>';
+    $("adminMessage").textContent = "Countdown cleared.";
+    $("pauseBtn").textContent = "Ⅱ Pause";
+    showToast("Countdown reset");
+  });
+  $("lockBtn").addEventListener("click", () => {
+    $("adminPanel").classList.add("hidden");
+    $("loginPanel").classList.remove("hidden");
+    $("password").value = "";
+    $("adminMessage").textContent = "";
+    showToast("Control panel locked");
+  });
+  if (paused) $("pauseBtn").textContent = "▶ Resume";
+  if (!paused && endAt && endAt <= Date.now()) endAt = Date.now();
+  render();
+  setInterval(render, 250);
+})();
+</script>
+</body>
+</html>
